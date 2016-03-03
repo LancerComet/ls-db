@@ -84,7 +84,6 @@ lsDB.init = function () {
             collections: []
         } 
     */
-    console.log(LSDB_DATA);
     if (isEmptyObj(LSDB_DATA)) {
         lsDB.LSDB_DATA.init();
     } else {
