@@ -206,12 +206,11 @@
 
         // 在集合内插入新文档.
         insert: function (key, value) {
-            if (this.find(key)) {
+            if (localStorage[this.filter + key]) {
                 console.log(config.consolePrefix + "Document \"" + key + "\" already exists. Use \"update()\" to rewrite value.");
                 return false;
-            };
-            value =
-                this.update(key, typeof value === "string" ? value : JSON.stringify(value));
+            }
+            value = this.update(key, typeof value === "string" ? value : JSON.stringify(value));
             return true;
         },
 
@@ -282,7 +281,7 @@
         batchRemove: function (roleFunc) {
             for (var item in localStorage) {
                 if (!localStorage.hasOwnProperty(item) || item.indexOf(this.filter) < 0) { continue; }
-                var keyName = item.substr(filter.length);  // "keyName"" from "LSDB_this.colName_keyName"
+                var keyName = item.substr(this.filter.length);  // "keyName"" from "LSDB_this.colName_keyName"
                 roleFunc(keyName) ? this.remove(keyName) : void(0);
             }
         },
