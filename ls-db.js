@@ -111,7 +111,7 @@ lsDB.collection = {
     
     // Create a collection. | 创建集合对象.
     create: function (name) {
-        if (lsDB.collection.exists.indexOf(name) > -1) {
+        if (lsDB.collection.find(name)) {
             console.log(lsDB.config.consolePrefix + "Collection " + name + " already exists, please use a new name.");
             return;
         }
@@ -160,7 +160,30 @@ lsDB.collection = {
     
     // 重命名集合名称.
     rename: function (oldName, newName) {
-        var thisCollection = new lsDB.collectionObj(oldName);
+        if (lsDB.collection.find(newName)) {
+            console.log(lsDB.config.consolePrefix + "Collection " + name + " already exists, please use a new name.");
+            return;
+        }
+        var thisCollection = lsDB.collection.use(oldName);
+        
+        // Rename documents in this collection.
+        var filter = thisCollection.filter;
+        for (var item in localStorage) {
+            if (!localStorage.hasOwnProperty(item) || item.indexOf(filter) < 0) { continue; }
+            var value = localStorage.getItem(item);
+            var keyName = item.substr(filter.length);  // "keyName"" from "LSDB_this.colName_keyName"            
+            localStorage.setItem(lsDB.config.keyPrefix + newName + "_" + keyName, value);
+            localStorage.removeItem(item);
+        }
+        
+        // Rename this collection.
+        // First replace oldName with newName in exists.
+        lsDB.collection.exists.splice(lsDB.collection.exists.indexOf(oldName), 1, newName);
+        var LSDB_DATA = lsDB.LSDB_DATA.checkout();  // LSDB_DATA is an Object.
+        LSDB_DATA.collections = lsDB.collection.exists;
+        lsDB.LSDB_DATA.refresh(LSDB_DATA);
+        
+        return true;
     }
 };
 
@@ -237,7 +260,6 @@ lsDB.collectionObj.prototype = {
             return false;
         }
         var value = this.find(oldKey)[0].value;
-        console.log(value);
         this.remove(oldKey);
         this.insert(newKey, value);
         return true;
